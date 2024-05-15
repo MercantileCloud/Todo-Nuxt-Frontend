@@ -1,0 +1,13 @@
+.router-link-active {
+    color: red;
+}
+
+.v-main {
+    overflow: auto;
+    scrollbar-width: thin;
+}
+
+/* hide broswer's scroll */
+body {
+    overflow: hidden;
+}
