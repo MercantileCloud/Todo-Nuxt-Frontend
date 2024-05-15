@@ -75,6 +75,10 @@ const v$ = useVuelidate(rules, state)
 const userstore = useStore()
 const router = useRouter()
 
+const config = useRuntimeConfig()
+
+const baseUrl = config.public.baseUrl
+
 const handleSubmit = () => {
     loading.value = true
     if (v$.value.$invalid) {
@@ -85,7 +89,7 @@ const handleSubmit = () => {
     }
 
     // login request
-    axios.post(`http://127.0.0.1:8000/api/auth/login`, state)
+    axios.post(`${baseUrl}/api/auth/login`, state)
         .then(res => {
             console.log('login success', res)
             userstore.login(res.data)

@@ -77,6 +77,9 @@ import { useStore } from '~/store';
 
 const router = useRouter();
 const userstore = useStore();
+const config = useRuntimeConfig()
+
+const baseUrl = config.public.baseUrl
 
 const drawer = ref(true);
 const group = ref(null);
@@ -91,7 +94,7 @@ const user = userstore.$state.user;
 const handleLogout = async () => {
     console.log('logout');
     // localStorage.removeItem('token');
-    await useFetch('http://127.0.0.1:8000/api/auth/logout', {
+    await useFetch(`${baseUrl}/api/auth/logout`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

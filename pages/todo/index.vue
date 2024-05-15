@@ -18,13 +18,13 @@
 
 <script setup>
 import axios from 'axios';
-import { TOKEN_KEY, baseUrl } from '~/store/constants';
+import { TOKEN_KEY } from '~/store/constants';
 
 import { ref } from 'vue';
 
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
-import { reactive } from 'vue'
+import { reactive } from 'vue';
 
 definePageMeta({
     layout: 'default',
@@ -37,12 +37,17 @@ const page = ref(1)
 const paginate = ref(10)
 const lastpage = ref(1)
 
+const config = useRuntimeConfig()
+
+const baseUrl = config.public.baseUrl
+
 
 const todos = ref(null)
 
+console.log('baseUrl', baseUrl);
 // make a function to fetch data
 const fetchData = async (setTodo = true, page = 1, paginate = 10) => {
-    await useFetch('http://127.0.0.1:8000/api/manage-todo', {
+    await useFetch(`${baseUrl}/api/manage-todo`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

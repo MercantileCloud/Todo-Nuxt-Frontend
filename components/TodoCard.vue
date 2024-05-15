@@ -44,6 +44,10 @@ import { TOKEN_KEY } from '~/store/constants'
 
 const { todo } = defineProps(['todo'])
 
+const config = useRuntimeConfig()
+
+const baseUrl = config.public.baseUrl
+
 // emits
 const emit = defineEmits(['fetchAgain'])
 
@@ -84,7 +88,7 @@ const handleEditSubmit = async () => {
         return
     }
 
-    await $fetch(`http://127.0.0.1:8000/api/manage-todo/${todo.id}`,
+    await $fetch(`${baseUrl}/api/manage-todo/${todo.id}`,
         {
             method: 'PUT',
             headers: {
@@ -114,7 +118,7 @@ const handleEditSubmit = async () => {
 
 const handleDeleteSubmit = async () => {
     loading.value = true
-    await $fetch(`http://127.0.0.1:8000/api/manage-todo/${todo.id}`,
+    await $fetch(`${baseUrl}/api/manage-todo/${todo.id}`,
         {
             method: 'DELETE',
             headers: {

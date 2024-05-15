@@ -59,7 +59,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     currencyKey: process.env.CURRENCY_API_KEY,
     public: {
-      apiBase: '',
+      baseUrl: process.env.BASE_URL
     },
   }
 })

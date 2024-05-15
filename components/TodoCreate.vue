@@ -33,7 +33,7 @@ import { ref } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import { reactive } from 'vue';
-import { TOKEN_KEY, baseUrl } from '~/store/constants';
+import { TOKEN_KEY } from '~/store/constants';
 
 const createDialog = ref(false)
 
@@ -55,6 +55,10 @@ const createRules = {
 
 const createv$ = useVuelidate(createRules, createState)
 
+const config = useRuntimeConfig()
+
+const baseUrl = config.public.baseUrl
+
 const handleCreateSubmit = async () => {
     console.log('create todo', createState.c_title, createState.c_description)
     createv$.value.$touch()
@@ -65,7 +69,7 @@ const handleCreateSubmit = async () => {
     }
     console.log('create todo', createState.c_title, createState.c_description)
 
-    await $fetch(`http://127.0.0.1:8000/api/manage-todo`,
+    await $fetch(`${baseUrl}/api/manage-todo`,
         {
             method: 'POST',
             headers: {
