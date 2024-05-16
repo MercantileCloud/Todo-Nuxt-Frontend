@@ -1,4 +1,5 @@
 <template>
+    <!-- login form start -->
     <form @submit.prevent="handleSubmit">
         <div class="mt-12 pt-12">
 
@@ -21,7 +22,7 @@
                     v-model="state.password" :error-messages="v$.password.$errors.map(e => e.$message)"
                     @blur="v$.password.$touch" @input="v$.password.$touch"></v-text-field>
 
-                <!-- disable when form is being submitted -->
+                <!-- disable and loading when form is being submitted -->
                 <v-btn class="mb-8" color="primary" size="large" block type="submit" :loading="loading"
                     :disabled="loading">
                     Log In
@@ -29,14 +30,17 @@
             </v-card>
         </div>
     </form>
+    <!-- login form end -->
 </template>
 
 <script setup>
 import { reactive } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
-import { required, email, sameAs, minLength, helpers } from '@vuelidate/validators'
-import axios from 'axios'
+import { required, email, minLength } from '@vuelidate/validators'
 import { useStore } from "~/store"
+import { useRouter } from 'vue-router'
+import { useOs } from '~/composables/useOs'
+
 // make layout none
 definePageMeta({
     layout: 'empty',
@@ -46,18 +50,28 @@ definePageMeta({
 
 import { ref } from 'vue';
 
+// visible used for password visibility toggle
 const visible = ref(false);
-
+// loading state
 const loading = ref(false)
-
+// auth error state thrown
 const authError = ref('')
 
-const device = useDevice()
+const device = useOs()
+console.log(device)
+const userstore = useStore()
+const router = useRouter()
+const snackbar = useSnackbar()
+const config = useRuntimeConfig()
+const baseUrl = config.public.baseUrl
 
+snackbar.clear()
+
+// initial state
 const initialState = {
     email: '',
     password: '',
-    device: device.userAgent,
+    device: device,
 }
 
 const state = reactive({
@@ -71,23 +85,18 @@ const rules = {
 
 const v$ = useVuelidate(rules, state)
 
-const userstore = useStore()
-const router = useRouter()
-
-const snackbar = useSnackbar()
-
-const config = useRuntimeConfig()
-
-const baseUrl = config.public.baseUrl
-snackbar.clear()
 const handleSubmit = async () => {
+    // set loading to true
     loading.value = true
+
+    // check if form is invalid
     if (v$.value.$invalid) {
         v$.value.$touch()
         loading.value = false
         return
     }
 
+    // fetch login api
     await $fetch(`${baseUrl}/api/auth/login`,
         {
             method: 'POST',
@@ -98,6 +107,7 @@ const handleSubmit = async () => {
             body: JSON.stringify(state)
         }
     ).then(res => {
+        // set user details and token to store
         userstore.login(res)
         loading.value = false
         router.push({ name: 'index' })

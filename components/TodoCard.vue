@@ -1,8 +1,10 @@
 <template>
     <div>
+        <!-- todo card, when clicked opens dialog with details -->
         <v-card :title="todo.title" :text="todo.description" @click="dialog = true" class="my-2"></v-card>
     </div>
     <v-dialog v-model="dialog" width="400px">
+        <!-- todo view dialog -->
         <v-card max-width="400" prepend-icon="mdi-update" :text="todo.description" :title="todo.title" v-if="!editmode">
             <template v-slot:actions>
                 <v-btn text @click="handleEditMode(todo)">
@@ -14,6 +16,7 @@
                 <v-btn class="ms-auto" text="Close" @click="dialog = false" color="primary" variant="flat"></v-btn>
             </template>
         </v-card>
+        <!-- todo edit dialog form -->
         <form @submit.prevent="handleEditSubmit">
             <v-card v-if="editmode" max-width="400">
                 <div class="pa-4">
@@ -46,12 +49,6 @@ import { useStore } from '~/store'
 
 const { todo } = defineProps(['todo'])
 
-const config = useRuntimeConfig()
-
-const snackbar = useSnackbar();
-
-const baseUrl = config.public.baseUrl
-
 // emits
 const emit = defineEmits(['fetchAgain'])
 
@@ -59,7 +56,11 @@ const dialog = ref(false)
 const editmode = ref(false)
 const loading = ref(false)
 
+const config = useRuntimeConfig()
+const snackbar = useSnackbar();
 const store = useStore()
+
+const baseUrl = config.public.baseUrl
 
 const initialState = {
     title: '',
@@ -77,13 +78,21 @@ const rules = {
 
 const v$ = useVuelidate(rules, state)
 
+// fetch todos by emitting
+const getTodos = async () => {
+    emit('fetchAgain')
+}
+
+// edit mode handler
 const handleEditMode = (todos) => {
     editmode.value = true
     state.title = todos.title
     state.description = todos.description
 }
 
+// edit submit handler
 const handleEditSubmit = async () => {
+    // check if form is invalid
     loading.value = true
     v$.value.$touch()
     if (v$.value.$invalid) {
@@ -91,6 +100,7 @@ const handleEditSubmit = async () => {
         return
     }
 
+    // update todo fetch api call for edit
     await $fetch(`${baseUrl}/api/manage-todo/${todo.id}`,
         {
             method: 'PUT',
@@ -106,6 +116,7 @@ const handleEditSubmit = async () => {
         }
     )
         .then(res => {
+            // error handling
             if (res.error?.value !== null && res.error?.value !== undefined) {
                 if (res.error.value.statusCode === 401) {
                     store.logout()
@@ -115,10 +126,14 @@ const handleEditSubmit = async () => {
                     })
                 }
             }
+
+            // success message
             snackbar.add({
                 type: 'success',
                 text: 'Todo updated successfully'
             })
+
+            // reset form state
             loading.value = false
             dialog.value = false
             editmode.value = false
@@ -126,6 +141,8 @@ const handleEditSubmit = async () => {
             todo.description = state.description
         })
         .catch(err => {
+
+            // error handling
             loading.value = false
             snackbar.add({
                 type: 'error',
@@ -135,6 +152,7 @@ const handleEditSubmit = async () => {
 }
 
 const handleDeleteSubmit = async () => {
+    // delete todo fetch api call
     loading.value = true
     await $fetch(`${baseUrl}/api/manage-todo/${todo.id}`,
         {
@@ -147,6 +165,7 @@ const handleDeleteSubmit = async () => {
         }
     )
         .then(res => {
+            // error handling
             if (res.error?.value !== null && res.error?.value !== undefined) {
                 if (res.error.value.statusCode === 401) {
                     store.logout()
@@ -156,15 +175,20 @@ const handleDeleteSubmit = async () => {
                     })
                 }
             }
-            loading.value = false
-            dialog.value = false
-            getTodos()
+
+            // success message
             snackbar.add({
                 type: 'success',
                 text: 'Todo deleted successfully'
             })
+            loading.value = false
+            dialog.value = false
+
+            // emit fetch again
+            getTodos()
         })
         .catch(err => {
+            // error handling
             loading.value = false
             snackbar.add({
                 type: 'error',
@@ -172,11 +196,6 @@ const handleDeleteSubmit = async () => {
             })
         })
 }
-
-const getTodos = async () => {
-    emit('fetchAgain')
-}
-
 
 </script>
 

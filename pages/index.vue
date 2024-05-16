@@ -6,6 +6,7 @@
 
 <script setup>
 
+// change the title of the page, and meta tags
 useHead({
     title: 'Dashboard',
     meta: [
@@ -14,7 +15,7 @@ useHead({
         { name: 'description', content: 'Todo Home page' },
     ],
     link: [
-        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/x-icon', href: '~/favicon.ico' },
     ],
 })
 </script>

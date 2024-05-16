@@ -1,3 +1,4 @@
+<!-- empty template for pages that does not need default layout -->
 <template>
     <v-app>
         <slot />

@@ -1,8 +1,10 @@
 <template>
     <div>
+        <!-- button that opens the create dialog -->
         <v-btn color="primary" @click="createDialog = true">
             <v-icon>mdi-plus</v-icon>&nbsp;Add Todo
         </v-btn>
+        <!-- dialog form for creating todo -->
         <v-dialog v-model="createDialog" width="400px">
             <form @submit.prevent="handleCreateSubmit">
                 <v-card max-width="400">
@@ -36,11 +38,17 @@ import { reactive } from 'vue';
 import { TOKEN_KEY } from '~/store/constants';
 import { useStore } from '~/store';
 
-const store = useStore()
+// emits
+const emit = defineEmits(['fetchAgain'])
 
+// dialog state
 const createDialog = ref(false)
 
-const emit = defineEmits(['fetchAgain'])
+const store = useStore()
+const config = useRuntimeConfig()
+const snackbar = useSnackbar()
+const baseUrl = config.public.baseUrl
+
 
 const initialcreateState = {
     c_title: '',
@@ -58,22 +66,15 @@ const createRules = {
 
 const createv$ = useVuelidate(createRules, createState)
 
-const config = useRuntimeConfig()
-
-const snackbar = useSnackbar()
-
-const baseUrl = config.public.baseUrl
-
 const handleCreateSubmit = async () => {
-    console.log('create todo', createState.c_title, createState.c_description)
+    // check if form is invalid
     createv$.value.$touch()
-    console.log('create todo', createv$.value.$errors)
     if (createv$.value.$invalid) {
         console.log('invalid')
         return
     }
-    console.log('create todo', createState.c_title, createState.c_description)
 
+    // create todo fetch api call
     await $fetch(`${baseUrl}/api/manage-todo`,
         {
             method: 'POST',
@@ -89,6 +90,7 @@ const handleCreateSubmit = async () => {
         }
     )
         .then(res => {
+            // error handling for unauthorized request
             if (res.error?.value !== null && res.error?.value !== undefined) {
                 if (res.error.value.statusCode === 401) {
                     store.logout()
@@ -98,14 +100,19 @@ const handleCreateSubmit = async () => {
                     })
                 }
             }
+            // success message
             snackbar.add({
                 type: 'success',
                 text: 'Todo created successfully'
             })
+            // reset form state
+            createState.c_title = ''
+            createState.c_description = ''
             createDialog.value = false
             emit('fetchAgain')
         })
         .catch(err => {
+            // error message handling to do
             console.log('todo update error', err)
         })
 }

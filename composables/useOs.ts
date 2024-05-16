@@ -1,3 +1,5 @@
+// used to detect the OS and browser of the user
+
 export const useOs = () => {
     const device = useDevice();
     let devicename = '';
