@@ -19,6 +19,7 @@ import { TOKEN_KEY } from '~/store/constants';
 import { ref } from 'vue';
 import { useStore } from '~/store';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 definePageMeta({
     layout: 'default',
@@ -43,36 +44,64 @@ const todos = ref(null)
 
 // make a function to fetch data
 const fetchData = async (setTodo = true, page = 1, paginate = 10) => {
-    await useFetch(`${baseUrl}/api/manage-todo`, {
-        method: 'GET',
+    // await useFetch(`${baseUrl}/api/manage-todo`, {
+    //     method: 'GET',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'Accept': 'application/json',
+    //         'Authorization': 'Bearer ' + localStorage.getItem(TOKEN_KEY)
+    //     },
+    //     params: {
+    //         paginate: paginate,
+    //         page: page,
+    //         search: ''
+    //     }
+    //     // handle unauthorized request
+    // }).then((data) => {
+    //     if (data.error?.value !== null && data.error?.value !== undefined) {
+    //         if (data.error.value.statusCode === 401) {
+    //             store.logout()
+    //             router.push('/login')
+    //             return
+    //         }
+    //     }
+    //     if (setTodo) {
+    //         todos.value = data.data.value.data.data
+    //         lastpage.value = data.data.value.data.last_page
+    //     } else {
+    //         console.log('todos', todos.value)
+    //         todos.value = [...todos.value, ...data.data.value.data.data]
+    //     }
+    // }).catch((err) => {
+    //     console.log('err', err)
+    // })
+    // write these whole in axios
+
+    await axios.get(`${baseUrl}/api/manage-todo`, {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + localStorage.getItem(TOKEN_KEY)
         },
         params: {
-            paginate: paginate,
-            page: page,
+            paginate: paginate.value,
+            page: page.value,
             search: ''
         }
-        // handle unauthorized request
-    }).then((data) => {
-        if (data.error?.value !== null && data.error?.value !== undefined) {
-            if (data.error.value.statusCode === 401) {
-                store.logout()
-                router.push('/login')
-                return
-            }
-        }
+    }).then((response) => {
+
         if (setTodo) {
-            todos.value = data.data.value.data.data
-            lastpage.value = data.data.value.data.last_page
+            todos.value = response.data.data.data
+            lastpage.value = response.data.data.last_page
         } else {
-            console.log('todos', todos.value)
-            todos.value = [...todos.value, ...data.data.value.data.data]
+            todos.value = [...todos.value, ...response.data.data.data]
         }
     }).catch((err) => {
-        console.log('err', err)
+        if (err.response.status === 401) {
+            store.logout()
+            router.push('/login')
+            return
+        }
     })
 }
 
