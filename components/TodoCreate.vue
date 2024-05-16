@@ -34,6 +34,9 @@ import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import { reactive } from 'vue';
 import { TOKEN_KEY } from '~/store/constants';
+import { useStore } from '~/store';
+
+const store = useStore()
 
 const createDialog = ref(false)
 
@@ -56,6 +59,8 @@ const createRules = {
 const createv$ = useVuelidate(createRules, createState)
 
 const config = useRuntimeConfig()
+
+const snackbar = useSnackbar()
 
 const baseUrl = config.public.baseUrl
 
@@ -84,7 +89,19 @@ const handleCreateSubmit = async () => {
         }
     )
         .then(res => {
-            console.log('todo update success', res)
+            if (res.error?.value !== null && res.error?.value !== undefined) {
+                if (res.error.value.statusCode === 401) {
+                    store.logout()
+                    snackbar.add({
+                        type: 'error',
+                        text: 'Unauthorized'
+                    })
+                }
+            }
+            snackbar.add({
+                type: 'success',
+                text: 'Todo created successfully'
+            })
             createDialog.value = false
             emit('fetchAgain')
         })

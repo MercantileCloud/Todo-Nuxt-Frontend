@@ -2,6 +2,7 @@ import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  spaLoadingTemplate: false,
   devtools: { enabled: false },
   css: ['~/assets/css/main.css'],
   app: {
@@ -35,6 +36,7 @@ export default defineNuxtConfig({
   modules: [
     '@pinia/nuxt',
     '@nuxtjs/device',
+    'nuxt-snackbar',
     "@hebilicious/vue-query-nuxt",
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
@@ -57,9 +59,14 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    currencyKey: process.env.CURRENCY_API_KEY,
     public: {
-      baseUrl: process.env.BASE_URL
+      baseUrl: process.env.BASE_URL,
     },
+  },
+
+  snackbar: {
+    top: true,
+    right: true,
+    duration: 1000
   }
 })

@@ -38,15 +38,6 @@
         </v-app-bar>
 
         <v-navigation-drawer v-model="drawer" :location="$vuetify.display.mobile ? 'bottom' : undefined" permanent app>
-            <!-- icon -->
-            <!-- <v-list-item style="height: 65px">
-                <v-list-item-title>
-                    <v-avatar>
-                        <v-img alt="John" :src="'https://ui-avatars.com/api/?name='+ user.name +'&background=random&color=fff'"></v-img>
-                    </v-avatar>
-                    {{ user.name }}
-                </v-list-item-title>
-            </v-list-item> -->
             <v-divider></v-divider>
             <v-list>
                 <v-list-item v-for="(item, index) in items" :key="index" :value="index" :to="item.value"
@@ -66,6 +57,7 @@
         <!-- </v-layout> -->
         <!-- </v-card> -->
     </v-app>
+    <NuxtSnackbar />
 </template>
 
 <script setup>
@@ -78,6 +70,8 @@ import { useStore } from '~/store';
 const router = useRouter();
 const userstore = useStore();
 const config = useRuntimeConfig()
+
+const snackbar = useSnackbar();
 
 const baseUrl = config.public.baseUrl
 
@@ -101,6 +95,16 @@ const handleLogout = async () => {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + localStorage.getItem(TOKEN_KEY)
         },
+    }).then((data) => {
+        if (data.error?.value !== null && data.error?.value !== undefined) {
+            if (data.error.value.statusCode === 401) {
+                userstore.logout()
+                snackbar.add({
+                    type: 'error',
+                    message: 'Unauthorized'
+                })
+            }
+        }
     });
     localStorage.removeItem(TOKEN_KEY);
     userstore.logout();

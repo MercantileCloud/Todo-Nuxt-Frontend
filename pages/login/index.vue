@@ -1,9 +1,10 @@
 <template>
     <form @submit.prevent="handleSubmit">
-        <!-- <v-img class="mx-auto my-6" max-width="228"
-            src="https://cdn.vuetifyjs.com/docs/images/logos/vuetify-logo-v3-slim-text-light.svg"></v-img> -->
         <div class="mt-12 pt-12">
+
             <v-card class="mx-auto pa-12 pb-8" elevation="8" max-width="448" rounded="lg">
+
+                <p class="text-h6 text-error" v-if="authError">{{ authError }}</p>
                 <div class="text-subtitle-1 text-medium-emphasis">Account</div>
 
                 <v-text-field density="compact" placeholder="Email address" prepend-inner-icon="mdi-email-outline"
@@ -12,10 +13,6 @@
 
                 <div class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between">
                     Password
-
-                    <!-- <a class="text-caption text-decoration-none text-blue" href="#" rel="noopener noreferrer"
-                    target="_blank">
-                    Forgot login password?</a> -->
                 </div>
 
                 <v-text-field :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
@@ -25,7 +22,7 @@
                     @blur="v$.password.$touch" @input="v$.password.$touch"></v-text-field>
 
                 <!-- disable when form is being submitted -->
-                <v-btn class="mb-8" color="blue" size="large" variant="tonal" block type="submit" :loading="loading"
+                <v-btn class="mb-8" color="primary" size="large" block type="submit" :loading="loading"
                     :disabled="loading">
                     Log In
                 </v-btn>
@@ -53,6 +50,8 @@ const visible = ref(false);
 
 const loading = ref(false)
 
+const authError = ref('')
+
 const device = useDevice()
 
 const initialState = {
@@ -75,29 +74,36 @@ const v$ = useVuelidate(rules, state)
 const userstore = useStore()
 const router = useRouter()
 
+const snackbar = useSnackbar()
+
 const config = useRuntimeConfig()
 
 const baseUrl = config.public.baseUrl
-
-const handleSubmit = () => {
+snackbar.clear()
+const handleSubmit = async () => {
     loading.value = true
     if (v$.value.$invalid) {
-        // touch
         v$.value.$touch()
         loading.value = false
         return
     }
 
-    // login request
-    axios.post(`${baseUrl}/api/auth/login`, state)
-        .then(res => {
-            console.log('login success', res)
-            userstore.login(res.data)
-            loading.value = false
-            router.push({ name: 'index' })
-        })
+    await $fetch(`${baseUrl}/api/auth/login`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(state)
+        }
+    ).then(res => {
+        userstore.login(res)
+        loading.value = false
+        router.push({ name: 'index' })
+    })
         .catch(err => {
-            console.log('login error', err)
+            authError.value = 'Invalid email or password'
             loading.value = false
         })
 }

@@ -14,25 +14,26 @@
                 <v-btn class="ms-auto" text="Close" @click="dialog = false" color="primary" variant="flat"></v-btn>
             </template>
         </v-card>
-
-        <v-card v-if="editmode" max-width="400">
-            <div class="pa-4">
-                <v-text-field v-model="state.title" label="Title" width="350"
-                    :error-messages="v$.title.$errors.map(e => e.$message)" @blur="v$.title.$touch"
-                    @input="v$.title.$touch"></v-text-field>
-                <v-textarea v-model="state.description" label="Description"
-                    :error-messages="v$.description.$errors.map(e => e.$message)" @blur="v$.description.$touch"
-                    @input="v$.description.$touch"></v-textarea>
-            </div>
-            <template v-slot:actions>
-                <v-btn text @click="editmode = false">
-                    <v-icon color="red">mdi-close</v-icon>&nbsp;Cancel
-                </v-btn>
-                <v-btn text @click="handleEditSubmit">
-                    <v-icon color="blue">mdi-check</v-icon>&nbsp;Save
-                </v-btn>
-            </template>
-        </v-card>
+        <form @submit.prevent="handleEditSubmit">
+            <v-card v-if="editmode" max-width="400">
+                <div class="pa-4">
+                    <v-text-field v-model="state.title" label="Title" width="350"
+                        :error-messages="v$.title.$errors.map(e => e.$message)" @blur="v$.title.$touch"
+                        @input="v$.title.$touch"></v-text-field>
+                    <v-textarea v-model="state.description" label="Description"
+                        :error-messages="v$.description.$errors.map(e => e.$message)" @blur="v$.description.$touch"
+                        @input="v$.description.$touch"></v-textarea>
+                </div>
+                <template v-slot:actions>
+                    <v-btn text @click="editmode = false">
+                        <v-icon color="red">mdi-close</v-icon>&nbsp;Cancel
+                    </v-btn>
+                    <v-btn text type="submit">
+                        <v-icon color="blue">mdi-check</v-icon>&nbsp;Save
+                    </v-btn>
+                </template>
+            </v-card>
+        </form>
     </v-dialog>
 </template>
 
@@ -41,22 +42,24 @@ import { ref, reactive } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required } from '@vuelidate/validators'
 import { TOKEN_KEY } from '~/store/constants'
+import { useStore } from '~/store'
 
 const { todo } = defineProps(['todo'])
 
 const config = useRuntimeConfig()
+
+const snackbar = useSnackbar();
 
 const baseUrl = config.public.baseUrl
 
 // emits
 const emit = defineEmits(['fetchAgain'])
 
-// fetchData is a function
-// const { fetchData } = defineProps(['fetchData'])
-
 const dialog = ref(false)
 const editmode = ref(false)
 const loading = ref(false)
+
+const store = useStore()
 
 const initialState = {
     title: '',
@@ -103,7 +106,19 @@ const handleEditSubmit = async () => {
         }
     )
         .then(res => {
-            console.log('todo update success', res)
+            if (res.error?.value !== null && res.error?.value !== undefined) {
+                if (res.error.value.statusCode === 401) {
+                    store.logout()
+                    snackbar.add({
+                        type: 'error',
+                        text: 'Unauthorized'
+                    })
+                }
+            }
+            snackbar.add({
+                type: 'success',
+                text: 'Todo updated successfully'
+            })
             loading.value = false
             dialog.value = false
             editmode.value = false
@@ -111,8 +126,11 @@ const handleEditSubmit = async () => {
             todo.description = state.description
         })
         .catch(err => {
-            console.log('todo update error', err)
             loading.value = false
+            snackbar.add({
+                type: 'error',
+                text: 'Todo update failed'
+            })
         })
 }
 
@@ -129,22 +147,33 @@ const handleDeleteSubmit = async () => {
         }
     )
         .then(res => {
-            console.log('todo delete success', res)
+            if (res.error?.value !== null && res.error?.value !== undefined) {
+                if (res.error.value.statusCode === 401) {
+                    store.logout()
+                    snackbar.add({
+                        type: 'error',
+                        text: 'Unauthorized'
+                    })
+                }
+            }
             loading.value = false
             dialog.value = false
             getTodos()
+            snackbar.add({
+                type: 'success',
+                text: 'Todo deleted successfully'
+            })
         })
         .catch(err => {
-            console.log('todo delete error', err)
             loading.value = false
+            snackbar.add({
+                type: 'error',
+                text: 'Todo delete failed'
+            })
         })
-
-
-
 }
 
 const getTodos = async () => {
-    console.log("I am gere")
     emit('fetchAgain')
 }
 

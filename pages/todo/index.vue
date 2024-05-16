@@ -1,7 +1,5 @@
 <template>
     <div>
-        <!-- <h2 class="pb-5">Todo list</h2> -->
-        <!-- flex with title and btn -->
         <div class="d-flex justify-content-between align-items-center">
             <div class="pb-5 me-auto">
                 <h2>Todo</h2>
@@ -25,6 +23,8 @@ import { ref } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import { reactive } from 'vue';
+import { useStore } from '~/store';
+import { useRouter } from 'vue-router';
 
 definePageMeta({
     layout: 'default',
@@ -37,14 +37,18 @@ const page = ref(1)
 const paginate = ref(10)
 const lastpage = ref(1)
 
+const store = useStore()
+
+const snackbar = useSnackbar()
+
 const config = useRuntimeConfig()
 
 const baseUrl = config.public.baseUrl
 
+const router = useRouter()
 
 const todos = ref(null)
 
-console.log('baseUrl', baseUrl);
 // make a function to fetch data
 const fetchData = async (setTodo = true, page = 1, paginate = 10) => {
     await useFetch(`${baseUrl}/api/manage-todo`, {
@@ -59,7 +63,15 @@ const fetchData = async (setTodo = true, page = 1, paginate = 10) => {
             page: page,
             search: ''
         }
+        // handle unauthorized request
     }).then((data) => {
+        if (data.error?.value !== null && data.error?.value !== undefined) {
+            if (data.error.value.statusCode === 401) {
+                store.logout()
+                router.push('/login')
+                return
+            }
+        }
         if (setTodo) {
             todos.value = data.data.value.data.data
             lastpage.value = data.data.value.data.last_page
@@ -67,16 +79,11 @@ const fetchData = async (setTodo = true, page = 1, paginate = 10) => {
             console.log('todos', todos.value)
             todos.value = [...todos.value, ...data.data.value.data.data]
         }
+    }).catch((err) => {
+        console.log('err', err)
     })
 }
 
-// fetch data
-
-// fetchData(false, page, paginate).then((data) => {
-//     console.log('data', data.data)
-//     todos.value = data.data.data
-//     lastpage.value = data.data.last_page
-// })
 fetchData(true, page, paginate)
 
 useHead({
@@ -91,10 +98,8 @@ useHead({
     ],
 })
 
-// onscroll event to load more data
-
 window.onscroll = function (ev) {
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+    if ((window.innerHeight + window.scrollY + 600) >= document.body.offsetHeight) {
         if (page.value < lastpage.value) {
             page.value = page.value + 1
             fetchData(false, page, paginate)
