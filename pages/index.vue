@@ -1,22 +1,13 @@
 <template>
     <div>
-        <h1>Home</h1>
+        <h2>Welcome back !!</h2>
     </div>
 </template>
 
 <script setup>
-// const { data } = await useFetch("/api/check?name=Nuxt", {
-//     method: "POST",
-//     headers: {
-//         "Content-Type": "application/json",
-//     },
-//     body: {
-//         age: 30,
-//     },
-// });
 
 useHead({
-    title: 'Home Page',
+    title: 'Dashboard',
     meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },

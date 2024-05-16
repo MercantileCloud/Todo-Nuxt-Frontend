@@ -15,14 +15,8 @@
 </template>
 
 <script setup>
-import axios from 'axios';
 import { TOKEN_KEY } from '~/store/constants';
-
 import { ref } from 'vue';
-
-import { useVuelidate } from '@vuelidate/core';
-import { required } from '@vuelidate/validators';
-import { reactive } from 'vue';
 import { useStore } from '~/store';
 import { useRouter } from 'vue-router';
 
@@ -38,8 +32,6 @@ const paginate = ref(10)
 const lastpage = ref(1)
 
 const store = useStore()
-
-const snackbar = useSnackbar()
 
 const config = useRuntimeConfig()
 
