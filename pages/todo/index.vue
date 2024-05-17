@@ -70,9 +70,11 @@ const router = useRouter()
 const baseUrl = config.public.baseUrl
 
 // function to fetch data or todo list
-const fetchData = async (setTodo = true, page = 1, paginate = 10) => {
+const fetchData = async (setTodo = true, searchpage = 1, paginate = 10) => {
     // when loading set to true
-    loading.value = true
+    if (setTodo) {
+        loading.value = true
+    }
 
     // used fetch api to get data
 
@@ -85,7 +87,7 @@ const fetchData = async (setTodo = true, page = 1, paginate = 10) => {
     //     },
     //     params: {
     //         paginate: paginate,
-    //         page: page,
+    //         page: searchpage,
     //         search: ''
     //     }
     //     // handle unauthorized request
@@ -118,17 +120,21 @@ const fetchData = async (setTodo = true, page = 1, paginate = 10) => {
         },
         params: {
             paginate: paginate.value,
-            page: page.value,
+            page: searchpage.value,
             search: ''
         }
     }).then((response) => {
         // if setTodo is true then set todos value to response data
+        console.log('search page', searchpage)
         if (setTodo) {
             todos.value = response.data.data.data
             lastpage.value = response.data.data.last_page
+            page.value = response.data.data.current_page
         } else {
             // if setTodo is false then append response data to todos value
             todos.value = [...todos.value, ...response.data.data.data]
+            lastpage.value = response.data.data.last_page
+            page.value = response.data.data.current_page
         }
         loading.value = false
     }).catch((err) => {
@@ -160,6 +166,9 @@ useHead({
 // fetch data on scroll to bottom
 window.onscroll = function (ev) {
     if ((window.innerHeight + window.scrollY + 600) >= document.body.offsetHeight) {
+        console.log('bottom')
+        console.log('page', page.value)
+        console.log('lastpage', lastpage.value)
         if (page.value < lastpage.value) {
             page.value = page.value + 1
             fetchData(false, page, paginate)
