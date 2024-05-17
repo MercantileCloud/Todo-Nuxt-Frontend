@@ -1,11 +1,11 @@
-export default defineEventHandler(async (event) => {
-    const { code } = event.context.params
+// export default defineEventHandler(async (event) => {
+//     const { code } = event.context.params
 
-    const { currencyKey } = useRuntimeConfig()
+//     const { currencyKey } = useRuntimeConfig()
 
-    const uri = `https://api.currencyapi.com/v3/latest?apikey=eJdPhICJUDBt?currencies=${code}&apikey=${currencyKey}`
+//     const uri = `https://api.currencyapi.com/v3/latest?apikey=eJdPhICJUDBt?currencies=${code}&apikey=${currencyKey}`
 
-    const { data } = await $fetch(uri)
+//     const { data } = await $fetch(uri)
 
-    return data;
-});
+//     return data;
+// });

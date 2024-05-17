@@ -40,6 +40,7 @@ import { required, email, minLength } from '@vuelidate/validators'
 import { useStore } from "~/store"
 import { useRouter } from 'vue-router'
 import { useOs } from '~/composables/useOs'
+import { ref } from 'vue';
 
 // make layout none
 definePageMeta({
@@ -47,8 +48,6 @@ definePageMeta({
     title: 'Login',
     description: 'This is a login page'
 })
-
-import { ref } from 'vue';
 
 // visible used for password visibility toggle
 const visible = ref(false);
@@ -58,7 +57,6 @@ const loading = ref(false)
 const authError = ref('')
 
 const device = useOs()
-console.log(device)
 const userstore = useStore()
 const router = useRouter()
 const snackbar = useSnackbar()
