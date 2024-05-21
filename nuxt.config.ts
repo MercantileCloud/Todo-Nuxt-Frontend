@@ -18,7 +18,7 @@ export default defineNuxtConfig({
       ],
     },
   },
-  ssr: false,
+  ssr: true,
   
    // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
    plugins: [

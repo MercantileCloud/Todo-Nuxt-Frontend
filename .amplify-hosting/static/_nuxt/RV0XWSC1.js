@@ -1,0 +1,1 @@
+import{bA as e,Q as o,w as a,o as s,aY as r}from"./DZR_Vk-B.js";import{V as p}from"./23a6aSsS.js";const n={layout:"empty"};function c(t,l,f,u,_,d){return s(),o(p,null,{default:a(()=>[r(t.$slots,"default")]),_:3})}const $=e(n,[["render",c]]);export{$ as default};
